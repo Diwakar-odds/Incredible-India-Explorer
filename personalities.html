@@ -55,66 +55,194 @@
             padding-bottom: 60px;
         }
 
-        .person-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
+        /* PREMIUM PERSONALITY CARDS */
+        
+        .person-card{
+            position: relative;
             overflow: hidden;
             text-align: center;
-            transition: transform 0.4s ease;
-            backdrop-filter: blur(10px);
+        
+            background: linear-gradient(
+                145deg,
+                rgba(35,40,55,.85),
+                rgba(20,24,35,.92)
+            );
+        
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 22px;
+            backdrop-filter: blur(14px);
+        
+            box-shadow:
+                0 12px 35px rgba(0,0,0,.35);
+        
+            transition:
+                transform .45s ease,
+                box-shadow .45s ease,
+                border-color .45s ease;
         }
 
-        .person-card:hover {
-            transform: translateY(-10px);
-            border-color: var(--gold);
+        /* Golden Spotlight */
+        
+        .person-card::before{
+            content:"";
+            position:absolute;
+            width:320px;
+            height:320px;
+        
+            background:
+            radial-gradient(circle,
+            rgba(255,215,0,.30) 0%,
+            rgba(255,215,0,.12) 35%,
+            transparent 72%);
+        
+            left:50%;
+            top:-170px;
+            transform:translateX(-50%) scale(.5);
+            opacity:0;
+            transition:.6s ease;
+            pointer-events:none;
         }
 
-        .person-img-wrapper {
-            width: 150px;
-            height: 150px;
-            margin: 30px auto 15px;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 4px solid var(--gold);
-            padding: 5px;
+
+        /*  Premium Shine */
+        
+        .person-card::after{
+            content:"";
+            position:absolute;
+            top:0;
+            left:-170%;
+            width:70%;
+            height:100%;
+            background:
+            linear-gradient(
+            120deg,
+            transparent,
+            rgba(255,255,255,.18),
+            transparent);
+            transition:.9s;
         }
 
-        .person-img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #ccc;
+        /* Hover */
+        
+        .person-card:hover{
+            transform:
+                translateY(-14px);
+            border-color:#FFD700;
+            box-shadow:
+                0 22px 55px rgba(255,176,31,.28),
+                0 0 28px rgba(255,215,0,.18);
         }
 
-        .person-info {
-            padding: 0 20px 30px;
+        .person-card:hover::before{
+            opacity:1;
+            transform:
+            translateX(-50%)
+            scale(1);
+        }
+        
+        .person-card:hover::after{
+            left:170%;
         }
 
-        .person-name {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            color: var(--primary-color);
-            margin-bottom: 5px;
+
+        /* Image Wrapper */
+        
+        .person-img-wrapper{
+            position:relative;
+            width:155px;
+            height:155px;
+            margin:32px auto 18px;
+            border-radius:50%;
+            overflow:hidden;
+            padding:0.5px;
+            border:3px solid #D4AF37;
+            transition:.45s;
+            background:
+            linear-gradient(
+            135deg,
+            #F7D774,
+            #D4AF37);
         }
 
-        .person-title {
-            color: var(--saffron);
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
+        /* Golden Ring Glow */
+        
+        .person-card:hover .person-img-wrapper{
+            transform:scale(1.05);
+            border-color:#FFD700;
+            box-shadow:
+            0 0 15px rgba(255,215,0,.5),
+            0 0 35px rgba(255,215,0,.35),
+            inset 0 0 12px rgba(255,255,255,.2);
         }
 
-        .person-desc {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            line-height: 1.5;
+
+        /* Image */
+        
+        .person-img{
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            border-radius:50%;
+            transition:
+            transform .5s ease,
+            filter .5s ease;
+        }
+
+        .person-card:hover .person-img{
+            transform:scale(1.12);
+            filter:brightness(1.08) contrast(1.05);
+        }
+
+        .person-info{
+            padding:0 22px 30px;
+        }
+
+        .person-name{
+            font-family:'Playfair Display',serif;
+            font-size:1.55rem;
+            color:white;
+            margin-bottom:8px;
+            transition:.4s;
+        }
+
+        .person-card:hover .person-name{
+            color:#FFD700;
+            letter-spacing:.5px;
+        }
+
+        /* Title */
+
+        .person-title{
+            color:#FFB347;
+            font-size:.88rem;
+            font-weight:600;
+            text-transform:uppercase;
+            letter-spacing:1.5px;
+            margin-bottom:16px;
+            transition:.4s;
+        }
+
+        .person-card:hover .person-title{
+            color:#FFD700;
+        }
+
+        /* Description */
+        
+        .person-desc{
+            font-size:.96rem;
+            line-height:1.65;
+            color:#C9CEDA;
+            transform:translateY(6px);
+            transition:.45s;
+        }
+
+        .person-card:hover .person-desc{
+            transform:translateY(0);
+            color:white;
         }
     </style>
 </head>
+
 <body>
     <header class="navbar scrolled" id="navbar">
         <div class="nav-container">
@@ -189,7 +317,7 @@
                 <div class="person-grid">
                     <div class="person-card">
                         <div class="person-img-wrapper">
-                            <div class="animated-placeholder person-img">Ashoka</div>
+                            <img src="assets/Ashoka.png"alt="Ashoka the Great" class="person-img">
                         </div>
                         <div class="person-info">
                             <h3 class="person-name">Ashoka the Great</h3>
@@ -200,7 +328,7 @@
 
                     <div class="person-card">
                         <div class="person-img-wrapper">
-                            <div class="animated-placeholder person-img">Shivaji Maharaj</div>
+                            <img src="assets/Chhatrapati_Shivaji.png"alt="Chhatrapati Shivaji Maharaj" class="person-img">
                         </div>
                         <div class="person-info">
                             <h3 class="person-name">Chhatrapati Shivaji Maharaj</h3>
@@ -211,7 +339,7 @@
 
                     <div class="person-card">
                         <div class="person-img-wrapper">
-                            <div class="animated-placeholder person-img">Rani Lakshmibai</div>
+                            <img src="assets/Rani_Lakshmibai.png"alt="Rani Lakshmibai" class="person-img">
                         </div>
                         <div class="person-info">
                             <h3 class="person-name">Rani Lakshmibai</h3>
@@ -222,7 +350,7 @@
 
                     <div class="person-card">
                         <div class="person-img-wrapper">
-                            <div class="animated-placeholder person-img">Akbar</div>
+                            <img src="assets/Akbar.png"alt="Akbar the Great" class="person-img">
                         </div>
                         <div class="person-info">
                             <h3 class="person-name">Akbar the Great</h3>
