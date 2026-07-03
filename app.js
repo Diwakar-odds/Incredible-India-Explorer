@@ -19,6 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
         initCulturePage();
     } else if (pathname.includes('startup.html')) {
         initStartupPage();
+    } else if (pathname.includes('heritage.html')) {
+        // Heritage page has its own inline initialization in heritage.html
+        console.log('✅ Heritage page loaded successfully');
     } else {
         // Main landing page (index.html or root)
         initScrollEffects();
