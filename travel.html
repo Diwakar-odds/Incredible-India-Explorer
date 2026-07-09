@@ -130,6 +130,53 @@
             border-radius: 8px;
         }
 
+        .roadtrip-grid {
+    perspective: 1500px;
+}
+
+.roadtrip-card-flip {
+    background: transparent;
+    min-height: 480px; /* match your tallest card's natural height */
+}
+
+.roadtrip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 480px;
+    transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+    transform-style: preserve-3d;
+}
+
+.roadtrip-card-flip.flipped .roadtrip-card-inner {
+    transform: rotateY(180deg);
+}
+
+.roadtrip-card-front,
+.roadtrip-card-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 97.1%;
+    height: 107%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.roadtrip-card-back {
+    transform: rotateY(180deg);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.roadtrip-card-back img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
         .vr-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -360,32 +407,54 @@
                 </div>
 
                 <div class="roadtrip-grid">
-                    <div class="roadtrip-card">
-                        <div class="roadtrip-route">
-                            <span>Manali</span> ➔ <span>Leh</span>
+                    <div class="roadtrip-card-flip">
+                        <div class="roadtrip-card-inner">
+                            <div class="roadtrip-card roadtrip-card-front">
+                                <div class="roadtrip-route">
+                                    <span>Manali</span> ➔ <span>Leh</span>
+                                </div>
+                                <h3 class="gold" style="font-size: 1.8rem; margin-bottom: 10px; font-family: 'Playfair Display', serif;">Leh-Ladakh Highway</h3>
+                                <p style="color: #ddd; margin-bottom: 20px;">A 474 km stretch of pure adrenaline, traversing high mountain passes, barren landscapes, and crystal clear lakes. This legendary highway is a rite of passage for bikers and road-trippers globally, scaling passes over 17,000 feet high. The journey takes you through the lunar-like landscapes of the Tibetan plateau, ending at the breathtaking turquoise waters of Pangong Lake.</p>
+                                <button class="btn btn-primary ripple roadtrip-flip-btn" style="width: 100%;">View Route Map</button>
+                            </div>
+                            <div class="roadtrip-card-back">
+                                <img src="assets/Manalileh.png" alt="Leh-Ladakh Highway route map">
+                            </div>
                         </div>
-                        <h3 class="gold" style="font-size: 1.8rem; margin-bottom: 10px; font-family: 'Playfair Display', serif;">Leh-Ladakh Highway</h3>
-                        <p style="color: #ddd; margin-bottom: 20px;">A 474 km stretch of pure adrenaline, traversing high mountain passes, barren landscapes, and crystal clear lakes. This legendary highway is a rite of passage for bikers and road-trippers globally, scaling passes over 17,000 feet high. The journey takes you through the lunar-like landscapes of the Tibetan plateau, ending at the breathtaking turquoise waters of Pangong Lake.</p>
-                        <button class="btn btn-primary ripple" style="width: 100%;">View Route Map</button>
                     </div>
 
-                    <div class="roadtrip-card">
-                        <div class="roadtrip-route">
-                            <span>Shimla</span> ➔ <span>Kaza</span>
+                    <div class="roadtrip-card-flip">
+                        <div class="roadtrip-card-inner">
+                            <div class="roadtrip-card roadtrip-card-front">
+                                <div class="roadtrip-route">
+                                    <span>Shimla</span> ➔ <span>Kaza</span>
+                                </div>
+                                <h3 class="gold" style="font-size: 1.8rem; margin-bottom: 10px; font-family: 'Playfair Display', serif;">Spiti Valley Circuit</h3>
+                                <p style="color: #ddd; margin-bottom: 20px;">Drive through the cold desert mountains of Himachal, visiting ancient monasteries and remote villages. Often called Little Tibet, Spiti Valley is a treacherous but mesmerizing loop of unpaved roads hanging over deep gorges. Witness the 1000-year-old Key Monastery perched on a rocky hill, interact with warm-hearted locals in Kibber, and experience extreme high-altitude serenity.             </p>
+                                <button class="btn btn-primary ripple roadtrip-flip-btn" style="width: 100%;">View Route Map</button>
+                            </div>
+                            <div class="roadtrip-card-back">
+                                <img src="assets/Shimlakaza.png" alt="Leh-Ladakh Highway route map">
+                            </div>
                         </div>
-                        <h3 class="gold" style="font-size: 1.8rem; margin-bottom: 10px; font-family: 'Playfair Display', serif;">Spiti Valley Circuit</h3>
-                        <p style="color: #ddd; margin-bottom: 20px;">Drive through the cold desert mountains of Himachal, visiting ancient monasteries and remote villages. Often called Little Tibet, Spiti Valley is a treacherous but mesmerizing loop of unpaved roads hanging over deep gorges. Witness the 1000-year-old Key Monastery perched on a rocky hill, interact with warm-hearted locals in Kibber, and experience extreme high-altitude serenity.</p>
-                        <button class="btn btn-primary ripple" style="width: 100%;">View Route Map</button>
                     </div>
 
-                    <div class="roadtrip-card">
-                        <div class="roadtrip-route">
-                            <span>Kochi</span> ➔ <span>Trivandrum</span>
+                    <div class="roadtrip-card-flip">
+                        <div class="roadtrip-card-inner">
+                            <div class="roadtrip-card roadtrip-card-front">
+                                <div class="roadtrip-route">
+                                    <span>Kochi</span> ➔ <span>Trivandrum</span>
+                                </div>
+                                <h3 class="gold" style="font-size: 1.8rem; margin-bottom: 10px; font-family: 'Playfair Display', serif;">Kerala Coastal Route</h3>
+                                <p style="color: #ddd; margin-bottom: 20px;">A scenic drive along the Arabian Sea coast, passing through backwaters, historic ports, and lush coconut groves. Start from the colonial spice port of Kochi, winding down a highway flanked by the ocean on one side and tranquil emerald backwaters on other. Enjoy fresh seafood , cruise on traditional houseboats, and end your trip at the majestic clifftop temples of Trivandrum.</p>
+                                <button class="btn btn-primary ripple roadtrip-flip-btn" style="width: 100%;">View Route Map</button>
+                            </div>
+                            <div class="roadtrip-card-back">
+                                <img src="assets/Kochitri.png" alt="Leh-Ladakh Highway route map">
+                            </div>
                         </div>
-                        <h3 class="gold" style="font-size: 1.8rem; margin-bottom: 10px; font-family: 'Playfair Display', serif;">Kerala Coastal Route</h3>
-                        <p style="color: #ddd; margin-bottom: 20px;">A scenic drive along the Arabian Sea coast, passing through backwaters, historic ports, and lush coconut groves. Start from the colonial spice port of Kochi, winding down a highway flanked by the ocean on one side and tranquil emerald backwaters on the other. Enjoy fresh seafood at local shacks, cruise on traditional houseboats, and end your trip at the majestic cliff-top temples of Trivandrum.</p>
-                        <button class="btn btn-primary ripple" style="width: 100%;">View Route Map</button>
                     </div>
+
                 </div>
             </div>
         </section>

@@ -7,6 +7,7 @@ document.addEventListener('app:route-changed', () => {
     initNavigation();
     initThemeToggle();
     initRotatingText();
+    initRoadTripFlipCards();
 
     // Page detection routing
     const pathname = window.location.pathname;
@@ -5055,4 +5056,23 @@ if ('serviceWorker' in navigator) {
         console.log('ServiceWorker registration failed: ', err);
       });
   });
+}
+
+/* ==========================================================================
+    Road trip card flip function , travel.html
+   ========================================================================== */  
+function initRoadTripFlipCards() {
+    document.querySelectorAll('.roadtrip-flip-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const flipCard = btn.closest('.roadtrip-card-flip');
+            flipCard.classList.toggle('flipped');
+        });
+    });
+
+    document.querySelectorAll('.roadtrip-card-back').forEach(back => {
+        back.addEventListener('click', () => {
+            back.closest('.roadtrip-card-flip').classList.remove('flipped');
+        });
+    });
 }
