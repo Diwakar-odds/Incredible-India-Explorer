@@ -16,6 +16,14 @@ import {
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getStoredAuthUser,
+  registerLocalUser,
+  signInLocalUser,
+  signInWithLocalGoogle,
+  signOutLocalUser,
+  subscribeToLocalAuth
+} from './auth-core.mjs';
 
 // Where to send the user after a successful login/signup, and after logout.
 const REDIRECT_URL = 'index.html';
@@ -113,11 +121,43 @@ if (authCard) {
   }
 
   function ensureAuthReady() {
-    if (!auth || !googleProvider || !isFirebaseConfigured) {
-      showMessage('Authentication is currently unavailable. Please check the Firebase configuration.', 'error');
-      return false;
+    if (auth && googleProvider && isFirebaseConfigured) {
+      return true;
     }
+
     return true;
+  }
+
+  async function handleAuthSubmit(mode, email, password, name = '') {
+    if (!ensureAuthReady()) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      if (auth && googleProvider && isFirebaseConfigured) {
+        if (mode === 'signup') {
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          await updateProfile(cred.user, { displayName: name });
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } else {
+        if (mode === 'signup') {
+          registerLocalUser({ email, password, displayName: name });
+        } else {
+          signInLocalUser({ email, password });
+        }
+      }
+
+      showMessage('Authentication successful! Redirecting...', 'success');
+      setTimeout(() => (window.location.href = REDIRECT_URL), 800);
+    } catch (error) {
+      showMessage(friendlyError(error));
+    } finally {
+      setLoading(false);
+    }
   }
 
   authForm.addEventListener('submit', async (e) => {
@@ -146,15 +186,9 @@ if (authCard) {
       }
 
       try {
-        setLoading(true);
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(cred.user, { displayName: name });
-        showMessage('Account created! Redirecting...', 'success');
-        setTimeout(() => (window.location.href = REDIRECT_URL), 1000);
+        await handleAuthSubmit('signup', email, password, name);
       } catch (error) {
         showMessage(friendlyError(error));
-      } finally {
-        setLoading(false);
       }
     } else {
       if (!ensureAuthReady()) {
@@ -162,14 +196,9 @@ if (authCard) {
       }
 
       try {
-        setLoading(true);
-        await signInWithEmailAndPassword(auth, email, password);
-        showMessage('Login successful! Redirecting...', 'success');
-        setTimeout(() => (window.location.href = REDIRECT_URL), 800);
+        await handleAuthSubmit('login', email, password);
       } catch (error) {
         showMessage(friendlyError(error));
-      } finally {
-        setLoading(false);
       }
     }
   });
@@ -182,7 +211,11 @@ if (authCard) {
 
     try {
       setLoading(true);
-      await signInWithPopup(auth, googleProvider);
+      if (auth && googleProvider && isFirebaseConfigured) {
+        await signInWithPopup(auth, googleProvider);
+      } else {
+        signInWithLocalGoogle();
+      }
       showMessage('Login successful! Redirecting...', 'success');
       setTimeout(() => (window.location.href = REDIRECT_URL), 800);
     } catch (error) {
@@ -202,8 +235,12 @@ if (authCard) {
       return;
     }
     try {
-      await sendPasswordResetEmail(auth, email);
-      showMessage('Password reset email sent! Check your inbox.', 'success');
+      if (auth && isFirebaseConfigured) {
+        await sendPasswordResetEmail(auth, email);
+        showMessage('Password reset email sent! Check your inbox.', 'success');
+      } else {
+        showMessage('Password reset is available once Firebase is configured.', 'success');
+      }
     } catch (error) {
       showMessage(friendlyError(error));
     }
@@ -342,8 +379,10 @@ function buildProfileDropdown(user) {
   });
 
   wrapper.querySelector('#logoutBtn').addEventListener('click', async () => {
-    if (auth) {
+    if (auth && isFirebaseConfigured) {
       await signOut(auth);
+    } else {
+      signOutLocalUser();
     }
     window.location.href = REDIRECT_URL;
   });
@@ -379,10 +418,8 @@ function handleNavAuthState(user) {
    PART 3 — SINGLE AUTH STATE LISTENER (drives both parts above)
    ========================================================================= */
 
-if (auth) {
+if (auth && isFirebaseConfigured) {
   onAuthStateChanged(auth, (user) => {
-    // If we're on the login page and the user is already logged in, skip
-    // straight to the homepage instead of showing the dropdown here.
     if (authCard && user) {
       window.location.href = REDIRECT_URL;
       return;
@@ -390,5 +427,20 @@ if (auth) {
     handleNavAuthState(user);
   });
 } else {
-  handleNavAuthState(null);
+  const localUser = getStoredAuthUser();
+  handleNavAuthState(localUser);
+
+  if (authCard) {
+    if (localUser) {
+      window.location.href = REDIRECT_URL;
+    }
+  }
+
+  subscribeToLocalAuth((user) => {
+    if (authCard && user) {
+      window.location.href = REDIRECT_URL;
+      return;
+    }
+    handleNavAuthState(user);
+  });
 }
