@@ -138,6 +138,17 @@
                         unlock its cultural profile, famous foods, and festivals.</p>
                 </div>
 
+                <!-- Map Region Highlight Toolbar -->
+                <div class="map-region-filter" id="map-region-filter">
+                    <button class="map-filter-btn active" data-region="all">All India</button>
+                    <button class="map-filter-btn" data-region="north">North</button>
+                    <button class="map-filter-btn" data-region="south">South</button>
+                    <button class="map-filter-btn" data-region="east">East</button>
+                    <button class="map-filter-btn" data-region="west">West</button>
+                    <button class="map-filter-btn" data-region="northeast">Northeast</button>
+                    <button class="map-filter-btn" data-region="central">Central</button>
+                </div>
+
                 <div class="map-wrapper">
                     <!-- Interactive Map Container -->
                     <div class="map-container" id="map-container">
@@ -159,10 +170,27 @@
                                 </p>
                             </div>
                             <div class="map-action-box">
-                                <button class="btn btn-gold ripple" id="btn-random-state">Explore a Random
-                                    State</button>
-
+                                <button class="btn btn-gold ripple" id="btn-random-state">Explore a Random State</button>
+                                <button class="btn btn-gold ripple hidden" id="btn-sidebar-view-more" style="margin-top: 10px; width: 100%;">View Detailed Page</button>
                             </div>
+                        </div>
+
+                        <!-- State Comparison Tool Card -->
+                        <div class="info-card comparison-card" id="state-comparison-card" style="margin-top: 20px;">
+                            <div class="info-card-header">
+                                <div class="icon-circle">🔄</div>
+                                <h3>Compare States</h3>
+                            </div>
+                            <p class="info-card-text" style="font-size: 0.9rem; margin-bottom: 15px;">Select two states to compare their heritage and culture side-by-side.</p>
+                            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                                <select id="compare-state-a" class="compare-select">
+                                    <option value="" disabled selected>Select First State</option>
+                                </select>
+                                <select id="compare-state-b" class="compare-select">
+                                    <option value="" disabled selected>Select Second State</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-gold ripple" id="btn-compare-states" style="width: 100%;">Compare States</button>
                         </div>
                     </div>
                 </div>
@@ -371,20 +399,54 @@
                         <span class="green-dot"></span>
                     </div>
 
-                    <div class="story-text-container">
-                        <p class="story-paragraph drop-cap" id="state-story-main-text">
-                            Story text will load here.
-                        </p>
+                    <!-- State Overlay Tab Switcher -->
+                    <div class="state-overlay-tabs" id="state-overlay-tabs" style="display: flex; gap: 15px; margin: 20px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
+                        <button class="state-tab-btn active" data-tab="overview" style="background: none; border: none; color: var(--primary-gold); font-weight: bold; cursor: pointer; font-family: var(--font-family); font-size: 0.95rem; padding: 5px 10px;">Overview</button>
+                        <button class="state-tab-btn" data-tab="highlights" style="background: none; border: none; color: var(--muted-text); font-weight: normal; cursor: pointer; font-family: var(--font-family); font-size: 0.95rem; padding: 5px 10px;">Culture & Cuisine</button>
                     </div>
 
-                    <!-- Highlights Box -->
-                    <div class="story-highlights-box">
-                        <h4>Cultural Highlights</h4>
-                        <div class="highlights-grid" id="state-story-highlights-grid">
-                            <!-- Injected by JS -->
+                    <!-- Tab Panel: Overview -->
+                    <div class="state-tab-panel" id="state-tab-overview">
+                        <div class="story-text-container">
+                            <p class="story-paragraph drop-cap" id="state-story-main-text">
+                                Story text will load here.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Tab Panel: Highlights -->
+                    <div class="state-tab-panel hidden" id="state-tab-highlights">
+                        <!-- Highlights Box -->
+                        <div class="story-highlights-box" style="margin-top: 0;">
+                            <h4>Cultural & Culinary Highlights</h4>
+                            <div class="highlights-grid" id="state-story-highlights-grid">
+                                <!-- Injected by JS -->
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- State Comparison Overlay Panel -->
+    <div class="story-overlay" id="state-comparison-overlay">
+        <div class="story-controls-header">
+            <button class="story-back-btn" id="comparison-back-btn">
+                <span class="arrow">&larr;</span> Return to Map
+            </button>
+            <h3 style="margin: 0; color: var(--primary-gold); font-family: var(--font-family); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; font-size: 1.1rem;">State Comparison</h3>
+        </div>
+
+        <div class="comparison-split-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 40px; box-sizing: border-box; height: calc(100% - 60px); overflow-y: auto;">
+            <!-- State A Details -->
+            <div class="comparison-column glass-card" id="comparison-column-a" style="padding: 30px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px);">
+                <!-- Populated by JS -->
+            </div>
+            
+            <!-- State B Details -->
+            <div class="comparison-column glass-card" id="comparison-column-b" style="padding: 30px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px);">
+                <!-- Populated by JS -->
             </div>
         </div>
     </div>

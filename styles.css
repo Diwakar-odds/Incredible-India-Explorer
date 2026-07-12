@@ -17863,4 +17863,114 @@ body.light-theme .hero-title .rotating-text {
     transform: translateY(10px);
 }
 
+/* ==========================================================================
+   INTERACTIVE STATE EXPLORATION DASHBOARD STYLES
+   ========================================================================== 
+   This section contains styling definitions for the:
+   1. Regional Highlight Toolbar (.map-region-filter & .map-filter-btn)
+      - Controls display alignment, interactive hover scaling, and active saffron-gold gradients.
+   2. Interactive SVG Map States (.dimmed and .highlighted-region)
+      - Handles transition opacity dimming for non-active regions and glowing filter drop-shadows.
+   3. State Comparison Selectors & Grid (.compare-select & .comparison-split-grid)
+      - Configures standard dark enclaves drop-downs, side-by-side flex columns, and visual progress meters.
+   4. State Details Overlay Tab controls (.state-tab-btn & .state-tab-panel)
+      - Styles button underlines and display states.
+   ========================================================================== */
+
+/* Regional highlight toolbar */
+.map-region-filter {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.map-filter-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--muted-text);
+    padding: 10px 22px;
+    border-radius: 99px;
+    cursor: pointer;
+    font-family: var(--font-family);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.5px;
+}
+
+.map-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: var(--text-color);
+    transform: translateY(-1px);
+}
+
+.map-filter-btn.active {
+    background: linear-gradient(135deg, var(--saffron), var(--primary-gold));
+    border-color: transparent;
+    color: var(--bg-color) !important;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(255, 176, 31, 0.25);
+}
+
+/* SVG map dynamic states */
+.india-svg-map path {
+    transition: fill 0.35s ease, opacity 0.35s ease, stroke 0.35s ease;
+}
+
+.india-svg-map path.dimmed {
+    opacity: 0.15;
+    fill: #222 !important;
+}
+
+.india-svg-map path.highlighted-region {
+    fill: var(--primary-gold) !important;
+    stroke: var(--saffron) !important;
+    stroke-width: 1.5px !important;
+    filter: drop-shadow(0 0 8px rgba(255, 176, 31, 0.5));
+}
+
+/* State Comparison Card Selectors */
+.compare-select {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text-color);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-family: var(--font-family);
+    font-size: 0.9rem;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.compare-select:focus {
+    border-color: var(--primary-gold);
+    box-shadow: 0 0 0 2px rgba(255, 176, 31, 0.2);
+}
+
+.compare-select option {
+    background: #0b0c10;
+    color: var(--text-color);
+}
+
+/* State detail tabs styling */
+.state-tab-btn {
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.state-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -11px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--primary-gold);
+}
+
 

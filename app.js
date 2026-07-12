@@ -324,6 +324,18 @@ function initInteractiveMap() {
     const highlightsGrid = document.getElementById('state-story-highlights-grid');
     const svgContainer = document.getElementById('state-svg-container');
 
+    // State Regions Map
+    const stateRegions = {
+        "an": "south", "ap": "south", "ar": "northeast", "as": "northeast", "br": "east",
+        "ch": "north", "ct": "central", "dd": "west", "dl": "north", "dn": "west",
+        "ga": "west", "gj": "west", "hp": "north", "hr": "north", "jh": "east",
+        "jk": "north", "ka": "south", "kl": "south", "ld": "south", "mh": "west",
+        "ml": "northeast", "mn": "northeast", "mp": "central", "mz": "northeast",
+        "nl": "northeast", "or": "east", "pb": "north", "py": "south", "rj": "west",
+        "sk": "northeast", "tg": "south", "tn": "south", "tr": "northeast", "up": "north",
+        "ut": "north", "wb": "east"
+    };
+
     // Clear loader
     if (!mapContainer) return;
     mapContainer.innerHTML = '';
@@ -346,12 +358,20 @@ function initInteractiveMap() {
         pathElement.setAttribute('data-name', loc.name);
 
         // Hover effect listeners — rich tooltip
-        pathElement.addEventListener('mouseenter', (e) => {
-            document.getElementById('tooltip-state-name').innerText = loc.name;
-            document.getElementById('tooltip-capital').innerText = loc.capital;
-            document.getElementById('tooltip-food').innerText = loc.food;
-            document.getElementById('tooltip-festival').innerText = loc.festival;
-            document.getElementById('tooltip-description').innerText = loc.description.substring(0, 120) + (loc.description.length > 120 ? '…' : '');
+        pathElement.addEventListener('mouseenter', () => {
+            const tooltipStateName = document.getElementById('tooltip-state-name');
+            const tooltipCapital = document.getElementById('tooltip-capital');
+            const tooltipFood = document.getElementById('tooltip-food');
+            const tooltipFestival = document.getElementById('tooltip-festival');
+            const tooltipDesc = document.getElementById('tooltip-description');
+
+            if (tooltipStateName) tooltipStateName.innerText = loc.name;
+            if (tooltipCapital) tooltipCapital.innerText = loc.capital;
+            if (tooltipFood) tooltipFood.innerText = loc.food;
+            if (tooltipFestival) tooltipFestival.innerText = loc.festival;
+            if (tooltipDesc) {
+                tooltipDesc.innerText = loc.description.substring(0, 120) + (loc.description.length > 120 ? '…' : '');
+            }
             tooltip.style.opacity = '1';
         });
 
@@ -393,18 +413,246 @@ function initInteractiveMap() {
     svgElement.appendChild(gElement);
     mapContainer.appendChild(svgElement);
 
+    // Bind Regional Filter Highlight events
+    const filterButtons = document.querySelectorAll('#map-region-filter .map-filter-btn');
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const selectedRegion = btn.dataset.region;
+            const paths = document.querySelectorAll('.india-svg-map path');
+
+            paths.forEach(path => {
+                const stateId = path.dataset.id;
+                const region = stateRegions[stateId];
+
+                if (selectedRegion === 'all') {
+                    path.classList.remove('dimmed', 'highlighted-region');
+                } else if (region === selectedRegion) {
+                    path.classList.remove('dimmed');
+                    path.classList.add('highlighted-region');
+                } else {
+                    path.classList.remove('highlighted-region');
+                    path.classList.add('dimmed');
+                }
+            });
+        });
+    });
+
+    // Populate State Comparison selectors
+    const compareA = document.getElementById('compare-state-a');
+    const compareB = document.getElementById('compare-state-b');
+    const compareBtn = document.getElementById('btn-compare-states');
+    const comparisonOverlay = document.getElementById('state-comparison-overlay');
+    const comparisonBackBtn = document.getElementById('comparison-back-btn');
+
+    if (compareA && compareB) {
+        compareA.innerHTML = '<option value="" disabled selected>Select First State</option>';
+        compareB.innerHTML = '<option value="" disabled selected>Select Second State</option>';
+
+        const sortedLocations = [...mapData.locations].sort((a, b) => a.name.localeCompare(b.name));
+        sortedLocations.forEach(loc => {
+            const optA = document.createElement('option');
+            optA.value = loc.id;
+            optA.textContent = loc.name;
+            compareA.appendChild(optA);
+
+            const optB = document.createElement('option');
+            optB.value = loc.id;
+            optB.textContent = loc.name;
+            compareB.appendChild(optB);
+        });
+    }
+
+    if (compareBtn) {
+        compareBtn.addEventListener('click', () => {
+            const idA = compareA.value;
+            const idB = compareB.value;
+
+            if (!idA || !idB) {
+                alert('Please select two states to compare!');
+                return;
+            }
+
+            const stateA = mapData.locations.find(loc => loc.id === idA);
+            const stateB = mapData.locations.find(loc => loc.id === idB);
+
+            if (stateA && stateB) {
+                showComparison(stateA, stateB);
+            }
+        });
+    }
+
+    if (comparisonBackBtn) {
+        comparisonBackBtn.addEventListener('click', () => {
+            comparisonOverlay.classList.remove('open');
+        });
+    }
+
+    /**
+     * State comparison rating metrics and facts.
+     * Evaluates four cultural and accessibility metrics on a 1-10 scale:
+     * - heritage: Density of historical monuments and UNESCO World Heritage Sites.
+     * - cuisine: Variety, uniqueness, and global prominence of regional culinary traditions.
+     * - access: Transport infrastructure, tourist ease, and availability of transit options.
+     * - art: Traditional dance forms, local music, painting styles, and folk festivals.
+     * - fact: A short, highly engaging offline trivia highlight for side-by-side rendering.
+     */
+    const comparisonMetrics = {
+        "an": { heritage: 7, cuisine: 8, access: 6, art: 7, fact: "Home to the historic British-era Cellular Jail and pristine Radhanagar Beach." },
+        "ap": { heritage: 9, cuisine: 9, access: 8, art: 8, fact: "Famous for the richest temple in the world, Tirumala Venkateswara in Tirupati." },
+        "ar": { heritage: 6, cuisine: 7, access: 5, art: 9, fact: "Houses India's largest Buddhist monastery in the high-altitude town of Tawang." },
+        "as": { heritage: 8, cuisine: 8, access: 7, art: 8, fact: "Home of the endangered one-horned rhinoceros in Kaziranga National Park." },
+        "br": { heritage: 10, cuisine: 7, access: 8, art: 9, fact: "The birthplace of Buddhism and the ancient international seat of Nalanda University." },
+        "ch": { heritage: 7, cuisine: 8, access: 9, art: 6, fact: "India's first planned modernist city designed by architect Le Corbusier." },
+        "ct": { heritage: 7, cuisine: 7, access: 6, art: 9, fact: "Known for the spectacular Chitrakote Falls, often called the Niagara of India." },
+        "dd": { heritage: 7, cuisine: 8, access: 7, art: 6, fact: "Blends coastal Portuguese forts with modern beach tourism enclaves." },
+        "dl": { heritage: 10, cuisine: 10, access: 10, art: 8, fact: "The historic capital of empires, containing Red Fort, Qutub Minar, and India Gate." },
+        "dn": { heritage: 6, cuisine: 7, access: 7, art: 8, fact: "Known for scenic tribal enclaves and quiet Daman Ganga river walks." },
+        "ga": { heritage: 8, cuisine: 9, access: 9, art: 7, fact: "World-famous for its golden sand beaches and UNESCO-listed Portuguese-era churches." },
+        "gj": { heritage: 9, cuisine: 9, access: 9, art: 9, fact: "Features the world's tallest statue, Statue of Unity, and Gir Forest wildlife sanctuaries." },
+        "hp": { heritage: 7, cuisine: 7, access: 7, art: 8, fact: "Known for breathtaking snowcapped valleys and Dharamshala, home of the Dalai Lama." },
+        "hr": { heritage: 7, cuisine: 8, access: 9, art: 7, fact: "Mentioned heavily in ancient texts; contains the historic battlefield of Kurukshetra." },
+        "jh": { heritage: 7, cuisine: 7, access: 7, art: 8, fact: "The mineral capital of India, rich in waterfalls and tribal traditions." },
+        "jk": { heritage: 8, cuisine: 9, access: 7, art: 9, fact: "Often called 'Paradise on Earth', famous for Dal Lake houseboats and apple orchards." },
+        "ka": { heritage: 10, cuisine: 9, access: 9, art: 9, fact: "Home to the glorious ruins of the Vijayanagara Empire in Hampi." },
+        "kl": { heritage: 8, cuisine: 9, access: 8, art: 10, fact: "Called 'God's Own Country', famous for backwaters, Ayurveda, and Kathakali." },
+        "ld": { heritage: 5, cuisine: 8, access: 5, art: 6, fact: "A coral archipelago featuring rich marine life and blue lagoons." },
+        "mh": { heritage: 10, cuisine: 10, access: 10, art: 9, fact: "Home to the rock-cut masterpiece Ajanta and Ellora Caves." },
+        "ml": { heritage: 6, cuisine: 8, access: 6, art: 8, fact: "Home of the cleanest village in Asia (Mawlynnong) and living root bridges." },
+        "mn": { heritage: 6, cuisine: 7, access: 6, art: 9, fact: "Birthplace of Polo and home to Loktak, the world's only floating lake." },
+        "mp": { heritage: 9, cuisine: 8, access: 8, art: 9, fact: "Known as the heart of India, featuring Khajuraho temples and tiger reserves." },
+        "mz": { heritage: 5, cuisine: 7, access: 5, art: 8, fact: "Known for mist-covered hills and Bamboo Dance (Cheraw)." },
+        "nl": { heritage: 6, cuisine: 7, access: 6, art: 9, fact: "Host of the world-famous Hornbill Festival, showcasing diverse tribal heritage." },
+        "or": { heritage: 9, cuisine: 8, access: 8, art: 9, fact: "Famous for the Sun Temple in Konark and Jagannath Rath Yatra." },
+        "pb": { heritage: 8, cuisine: 10, access: 9, art: 8, fact: "Contains the magnificent Golden Temple, the spiritual center of Sikhism." },
+        "py": { heritage: 7, cuisine: 9, access: 8, art: 7, fact: "A scenic French-heritage enclave and home of the utopian city Auroville." },
+        "rj": { heritage: 10, cuisine: 10, access: 9, art: 10, fact: "The land of kings, famous for massive desert hillforts and grand palaces." },
+        "sk": { heritage: 7, cuisine: 8, access: 6, art: 8, fact: "India's first organic state, offering panoramic views of Mount Kanchenjunga." },
+        "tg": { heritage: 9, cuisine: 9, access: 9, art: 8, fact: "Famous for Charminar, Hyderabadi Biryani, and Kakatiya architecture." },
+        "tn": { heritage: 10, cuisine: 9, access: 9, art: 10, fact: "Home to the oldest surviving classical language, Tamil, and massive Gopuram temples." },
+        "tr": { heritage: 7, cuisine: 7, access: 6, art: 8, fact: "Known for Neermahal, a spectacular water palace built in the center of Lake Rudrasagar." },
+        "up": { heritage: 10, cuisine: 10, access: 9, art: 9, fact: "Contains the Taj Mahal, one of the Seven Wonders of the World, and holy Varanasi." },
+        "ut": { heritage: 8, cuisine: 7, access: 8, art: 8, fact: "The Land of Gods, containing the Himalayan Valley of Flowers." },
+        "wb": { heritage: 9, cuisine: 10, access: 9, art: 10, fact: "The cultural capital, home to Nobel laureate Rabindranath Tagore and Sundarbans." }
+    };
+
+    function showComparison(stateA, stateB) {
+        const colA = document.getElementById('comparison-column-a');
+        const colB = document.getElementById('comparison-column-b');
+
+        const metricsA = comparisonMetrics[stateA.id] || { heritage: 7, cuisine: 7, access: 7, art: 7, fact: "" };
+        const metricsB = comparisonMetrics[stateB.id] || { heritage: 7, cuisine: 7, access: 7, art: 7, fact: "" };
+
+        function makeMeters(metrics) {
+            return `
+                <div style="margin-top:20px;">
+                    <div style="margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px; font-weight:600; color:var(--muted-text);">
+                            <span>Heritage Richness</span>
+                            <span>${metrics.heritage}/10</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.08); height:6px; border-radius:3px; overflow:hidden;">
+                            <div style="background:var(--saffron); width:${metrics.heritage * 10}%; height:100%; border-radius:3px;"></div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px; font-weight:600; color:var(--muted-text);">
+                            <span>Culinary Diversity</span>
+                            <span>${metrics.cuisine}/10</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.08); height:6px; border-radius:3px; overflow:hidden;">
+                            <div style="background:var(--primary-gold); width:${metrics.cuisine * 10}%; height:100%; border-radius:3px;"></div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px; font-weight:600; color:var(--muted-text);">
+                            <span>Tourist Access & Transit</span>
+                            <span>${metrics.access}/10</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.08); height:6px; border-radius:3px; overflow:hidden;">
+                            <div style="background:#00f2fe; width:${metrics.access * 10}%; height:100%; border-radius:3px;"></div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:20px;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px; font-weight:600; color:var(--muted-text);">
+                            <span>Artistic Traditions</span>
+                            <span>${metrics.art}/10</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.08); height:6px; border-radius:3px; overflow:hidden;">
+                            <div style="background:var(--green); width:${metrics.art * 10}%; height:100%; border-radius:3px;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (colA && colB) {
+            colA.innerHTML = `
+                <h2 style="color:var(--primary-gold); margin-bottom:5px;">${stateA.name}</h2>
+                <p style="color:var(--saffron); font-weight:600; margin-top:0; font-size:1.1rem;">🏛️ Capital: ${stateA.capital}</p>
+                <div style="margin:20px 0; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:15px;">
+                    <p style="color:var(--text-color); line-height:1.6; font-size: 0.95rem;">${stateA.description}</p>
+                </div>
+                <h4 style="color:var(--primary-gold); margin-bottom:8px; font-size: 1rem; text-transform: uppercase; letter-spacing:1px;">🍲 Famous Food</h4>
+                <p style="margin-top:0; margin-bottom:20px; font-size: 0.95rem;">${stateA.food}</p>
+                <h4 style="color:var(--primary-gold); margin-bottom:8px; font-size: 1rem; text-transform: uppercase; letter-spacing:1px;">🎉 Major Festival</h4>
+                <p style="margin-top:0; margin-bottom:25px; font-size: 0.95rem;">${stateA.festival}</p>
+                
+                <h4 style="color:var(--primary-gold); margin-bottom:8px; font-size: 1rem; text-transform: uppercase; letter-spacing:1px;">📊 Metric Analysis</h4>
+                ${makeMeters(metricsA)}
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px; margin-bottom:25px; font-size:0.9rem; line-height:1.5; color:var(--muted-text);">
+                    <strong>Key Fact:</strong> ${metricsA.fact}
+                </div>
+                
+                <button class="btn btn-primary" onclick="window.appRouter ? window.appRouter.handleRoute('states/${stateA.id}.html', true) : window.location.href='states/${stateA.id}.html'" style="font-size:0.9rem; padding:8px 18px;">Explore Full Page</button>
+            `;
+
+            colB.innerHTML = `
+                <h2 style="color:var(--primary-gold); margin-bottom:5px;">${stateB.name}</h2>
+                <p style="color:var(--saffron); font-weight:600; margin-top:0; font-size:1.1rem;">🏛️ Capital: ${stateB.capital}</p>
+                <div style="margin:20px 0; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:15px;">
+                    <p style="color:var(--text-color); line-height:1.6; font-size: 0.95rem;">${stateB.description}</p>
+                </div>
+                <h4 style="color:var(--primary-gold); margin-bottom:8px; font-size: 1rem; text-transform: uppercase; letter-spacing:1px;">🍲 Famous Food</h4>
+                <p style="margin-top:0; margin-bottom:20px; font-size: 0.95rem;">${stateB.food}</p>
+                <h4 style="color:var(--primary-gold); margin-bottom:8px; font-size: 1rem; text-transform: uppercase; letter-spacing:1px;">🎉 Major Festival</h4>
+                <p style="margin-top:0; margin-bottom:25px; font-size: 0.95rem;">${stateB.festival}</p>
+                
+                <h4 style="color:var(--primary-gold); margin-bottom:8px; font-size: 1rem; text-transform: uppercase; letter-spacing:1px;">📊 Metric Analysis</h4>
+                ${makeMeters(metricsB)}
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px; margin-bottom:25px; font-size:0.9rem; line-height:1.5; color:var(--muted-text);">
+                    <strong>Key Fact:</strong> ${metricsB.fact}
+                </div>
+                
+                <button class="btn btn-primary" onclick="window.appRouter ? window.appRouter.handleRoute('states/${stateB.id}.html', true) : window.location.href='states/${stateB.id}.html'" style="font-size:0.9rem; padding:8px 18px;">Explore Full Page</button>
+            `;
+        }
+
+        comparisonOverlay.classList.add('open');
+    }
+
     // Overlay Close Triggers
     overlayBackBtn.addEventListener('click', closeOverlay);
 
     // ESC key closes overlay
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeOverlay();
+        if (e.key === 'Escape') {
+            closeOverlay();
+            comparisonOverlay.classList.remove('open');
+        }
     });
 
-    // View More Button Trigger - Navigate to individual state page
+    // View More Button Trigger - Navigate to individual state page via SPA router or standard href
     viewMoreBtn?.addEventListener('click', () => {
         const currentId = viewMoreBtn.getAttribute('data-active-id');
-        window.location.href = `states/${currentId}.html`;
+        const targetPath = `states/${currentId}.html`;
+        if (window.appRouter && typeof window.appRouter.handleRoute === 'function') {
+            window.appRouter.handleRoute(targetPath, true);
+        } else {
+            window.location.href = targetPath;
+        }
     });
 
     // Helper functions
@@ -424,9 +672,9 @@ function initInteractiveMap() {
 
         // Set up highlights
         highlightsGrid.innerHTML = `
-            <div class="highlight-bullet"><span class="bullet-icon">ðŸ“</span><span>Capital: ${loc.capital}</span></div>
-            <div class="highlight-bullet"><span class="bullet-icon">ðŸ›</span><span>Famous Food: ${loc.food}</span></div>
-            <div class="highlight-bullet"><span class="bullet-icon">ðŸŽ‰</span><span>Major Festival: ${loc.festival}</span></div>
+            <div class="highlight-bullet"><span class="bullet-icon">📍</span><span>Capital: ${loc.capital}</span></div>
+            <div class="highlight-bullet"><span class="bullet-icon">🍲</span><span>Famous Food: ${loc.food}</span></div>
+            <div class="highlight-bullet"><span class="bullet-icon">🎉</span><span>Major Festival: ${loc.festival}</span></div>
         `;
 
         // Render SVG in canvas
@@ -448,7 +696,7 @@ function initInteractiveMap() {
         if (infoContent) {
             infoContent.innerHTML = `
                 <div class="info-card-header">
-                    <div class="icon-circle">ðŸ“</div>
+                    <div class="icon-circle">📍</div>
                     <h3>${loc.name}</h3>
                 </div>
                 <p class="info-card-text">
@@ -469,20 +717,52 @@ function initInteractiveMap() {
 
         // Bind audio button
         overlayAudioBtn.classList.remove('playing');
-        overlayAudioBtn.innerHTML = '<span class="audio-icon">ðŸ”Š</span> Listen to Soundscape';
+        overlayAudioBtn.innerHTML = '<span class="audio-icon">🔊</span> Listen to Soundscape';
         stopSoundscape();
 
         overlayAudioBtn.onclick = () => {
             if (overlayAudioBtn.classList.contains('playing')) {
                 overlayAudioBtn.classList.remove('playing');
-                overlayAudioBtn.innerHTML = '<span class="audio-icon">ðŸ”Š</span> Listen to Soundscape';
+                overlayAudioBtn.innerHTML = '<span class="audio-icon">🔊</span> Listen to Soundscape';
                 stopSoundscape();
             } else {
                 overlayAudioBtn.classList.add('playing');
-                overlayAudioBtn.innerHTML = '<span class="audio-icon">ðŸ”‡</span> Stop Soundscape';
+                overlayAudioBtn.innerHTML = '<span class="audio-icon">🔇</span> Stop Soundscape';
                 playStateSoundscape(loc.name);
             }
         };
+
+        // Bind inner overlay tabs logic
+        const tabButtons = document.querySelectorAll('#state-overlay-tabs .state-tab-btn');
+        const tabPanels = document.querySelectorAll('.state-tab-panel');
+
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabButtons.forEach(b => {
+                    b.classList.remove('active');
+                    b.style.color = 'var(--muted-text)';
+                    b.style.fontWeight = 'normal';
+                });
+                btn.classList.add('active');
+                btn.style.color = 'var(--primary-gold)';
+                btn.style.fontWeight = 'bold';
+
+                const targetTab = btn.dataset.tab;
+                tabPanels.forEach(panel => {
+                    if (panel.id === `state-tab-${targetTab}`) {
+                        panel.classList.remove('hidden');
+                    } else {
+                        panel.classList.add('hidden');
+                    }
+                });
+            });
+        });
+
+        // Initialize to first overview tab
+        const defaultTab = document.querySelector('#state-overlay-tabs .state-tab-btn[data-tab="overview"]');
+        if (defaultTab) {
+            defaultTab.click();
+        }
 
         setupScrollReveals();
         spawnStateParticles();
