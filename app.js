@@ -6526,15 +6526,119 @@ function initSpiritualCarousel() {
     render();
 }
 
+// Toast notification styling injection for PWA offline/online states
+function injectPWAToastStyles() {
+    if (document.getElementById('pwa-toast-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'pwa-toast-styles';
+    style.textContent = `
+        .pwa-toast {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: hsl(222, 35%, 12%);
+            border: 1px solid rgba(255, 176, 31, 0.3);
+            border-radius: 8px;
+            padding: 12px 20px;
+            color: #f1f1f1;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10000;
+        }
+        .pwa-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .pwa-toast-success {
+            border-color: #138808;
+        }
+        .pwa-toast-warning {
+            border-color: #ff6f3c;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+function showPWAToast(message, type = 'info') {
+    injectPWAToastStyles();
+    let toast = document.getElementById('pwa-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'pwa-toast';
+        toast.className = 'pwa-toast';
+        document.body.appendChild(toast);
+    }
+    
+    let icon = 'ℹ️';
+    if (type === 'success') {
+        icon = '✅';
+        toast.className = 'pwa-toast pwa-toast-success';
+    } else if (type === 'warning') {
+        icon = '⚠️';
+        toast.className = 'pwa-toast pwa-toast-warning';
+    } else {
+        toast.className = 'pwa-toast';
+    }
+    
+    toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 4000);
+}
+
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
+        // 1. Try to detect root prefix from the script src attribute loading app.js
+        const script = document.querySelector('script[src*="app.js"]');
+        let prefix = '';
+        if (script) {
+            const src = script.getAttribute('src');
+            const match = src.match(/^(\.\.\/)+/);
+            if (match) {
+                prefix = match[0];
+            }
+        }
+        
+        // 2. Fallback: Detect prefix based on URL path segment depth
+        if (!prefix) {
+            const pathname = window.location.pathname;
+            const isSubdir = pathname.includes('/states/') || 
+                            pathname.includes('/forts/') || 
+                            pathname.includes('/freedom-timeline/') || 
+                            pathname.includes('/handloom/') || 
+                            pathname.includes('/kingdoms/') || 
+                            pathname.includes('/postal-stamps/') || 
+                            pathname.includes('/traditional-games/') || 
+                            pathname.includes('/toys/') || 
+                            pathname.includes('/geological-wonders/') || 
+                            pathname.includes('/innovation-timeline/');
+            prefix = isSubdir ? '../' : './';
+        }
+
+        navigator.serviceWorker.register(prefix + 'sw.js')
             .then(registration => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
             }, err => {
                 console.log('ServiceWorker registration failed: ', err);
             });
+
+        // 3. Listen to online/offline connection state changes to notify users
+        window.addEventListener('online', () => {
+            showPWAToast('Your internet connection has been restored. Welcome back online!', 'success');
+        });
+        window.addEventListener('offline', () => {
+            showPWAToast('Connection lost. You are now browsing in offline mode.', 'warning');
+        });
     });
 }
 
